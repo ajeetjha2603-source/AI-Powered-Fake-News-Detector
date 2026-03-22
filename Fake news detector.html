@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TruthLens AI</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        color: white;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 20px;
+        color: #00ffd5;
+    }
+
+    .container {
+        width: 70%;
+        margin: auto;
+        padding: 20px;
+        border-radius: 15px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    textarea {
+        width: 90%;
+        height: 120px;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background: #1c1f2b;
+        color: white;
+        font-size: 16px;
+    }
+
+    button {
+        margin: 10px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #00ffd5;
+        color: black;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #00c9a7;
+    }
+
+    .result {
+        font-size: 24px;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+    .real { color: #00ff9d; }
+    .fake { color: #ff4d4d; }
+
+    .progress {
+        width: 80%;
+        height: 20px;
+        background: #333;
+        border-radius: 10px;
+        margin: 15px auto;
+    }
+
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: 0.5s;
+    }
+
+    .history {
+        margin-top: 20px;
+        text-align: left;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .history-item {
+        background: rgba(255,255,255,0.1);
+        margin: 5px;
+        padding: 8px;
+        border-radius: 8px;
+    }
+
+    .toggle {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        cursor: pointer;
+    }
+
+    .light-mode {
+        background: #f4f4f4;
+        color: black;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="toggle" onclick="toggleMode()">🌗 Toggle Mode</div>
+
+<h1>📰 TruthLens AI</h1>
+
+<div class="container">
+
+    <h3>AI Fake News Detector 🤖</h3>
+
+    <textarea id="inputText" placeholder="Paste news here..."></textarea><br>
+
+    <button onclick="analyze()">🔍 Analyze</button>
+    <button onclick="clearText()">🧹 Clear</button>
+
+    <h4>Try Samples:</h4>
+    <button onclick="setSample(1)">Fake News</button>
+    <button onclick="setSample(2)">Real News</button>
+
+    <div id="result" class="result"></div>
+
+    <div class="progress">
+        <div id="bar" class="progress-bar"></div>
+    </div>
+
+    <div id="confidence"></div>
+
+    <h3>📜 History</h3>
+    <div id="history" class="history"></div>
+
+</div>
+
+<script>
+
+let historyList = [];
+
+function analyze() {
+    let text = document.getElementById("inputText").value.toLowerCase();
+
+    if (text.trim() === "") {
+        alert("Enter text!");
+        return;
+    }
+
+    let fakeWords = ["click", "win", "free", "shocking", "guarantee", "earn"];
+    let realWords = ["government", "research", "official", "study", "report"];
+
+    let score = 0;
+
+    fakeWords.forEach(word => {
+        if (text.includes(word)) score--;
+    });
+
+    realWords.forEach(word => {
+        if (text.includes(word)) score++;
+    });
+
+    let result = "";
+    let confidence = Math.min(95, Math.max(60, 70 + score * 5));
+
+    if (score >= 0) {
+        result = "✅ REAL NEWS";
+        document.getElementById("result").className = "result real";
+        document.getElementById("bar").style.background = "#00ff9d";
+    } else {
+        result = "🚨 FAKE NEWS";
+        document.getElementById("result").className = "result fake";
+        document.getElementById("bar").style.background = "#ff4d4d";
+    }
+
+    document.getElementById("result").innerHTML = result;
+    document.getElementById("confidence").innerHTML = "Confidence: " + confidence + "%";
+    document.getElementById("bar").style.width = confidence + "%";
+
+    // Save history
+    historyList.unshift(result + " - " + text.substring(0,50));
+    updateHistory();
+}
+
+function updateHistory() {
+    let historyDiv = document.getElementById("history");
+    historyDiv.innerHTML = "";
+
+    historyList.slice(0,5).forEach(item => {
+        let div = document.createElement("div");
+        div.className = "history-item";
+        div.innerText = item;
+        historyDiv.appendChild(div);
+    });
+}
+
+function clearText() {
+    document.getElementById("inputText").value = "";
+}
+
+function setSample(type) {
+    if (type === 1) {
+        document.getElementById("inputText").value = "Click here to win free money now!!!";
+    } else {
+        document.getElementById("inputText").value = "Government releases official economic report";
+    }
+}
+
+function toggleMode() {
+    document.body.classList.toggle("light-mode");
+}
+
+</script>
+
+</body>
+</html>
